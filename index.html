@@ -1,0 +1,374 @@
+```html
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام إدارة الجودة FMEA | Kahve Fabrikası Kalite Yönetimi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            coffee: {
+              950: '#1C110C',
+              900: '#2C1A12',
+              800: '#42281C',
+              700: '#5C3A28',
+              600: '#7A4F38',
+              100: '#F5ECE6',
+              50: '#FAF6F3',
+            },
+            amberroast: {
+              500: '#D97706',
+              600: '#B45309',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      background-color: #FAF6F3;
+      color: #1C110C;
+    }
+    [dir="rtl"] body {
+      font-family: 'Cairo', sans-serif;
+    }
+    [dir="ltr"] body {
+      font-family: 'Inter', sans-serif;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+      body { background: #fff !important; font-size: 11px !important; }
+      .print-card { box-shadow: none !important; border: 1px solid #ccc !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Print-Only A4 Header with Engineer Signature -->
+  <div class="hidden print-only border-b-2 border-coffee-900 pb-3 mb-4 px-4 pt-2">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-extrabold text-coffee-900">Kahve Fabrikası - Kalite Yönetimi (FMEA & 8D)</h1>
+        <p class="text-xs text-stone-600">Canlı Risk Analizi ve Uygunsuzluk Takip Raporu / تقرير تحليل المخاطر والجودة</p>
+      </div>
+      <div class="text-end border-s-2 border-amberroast-500 ps-3">
+        <p class="text-xs font-bold text-amberroast-600 uppercase tracking-wide">Gıda Mühendisi</p>
+        <p class="text-sm font-extrabold text-coffee-900">Muhammed Abdulmünim</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 z-50 flex flex-col gap-2 max-w-md w-full px-4 pointer-events-none" style="inset-inline-end: 1rem;"></div>
+
+  <!-- Top Header -->
+  <header class="bg-coffee-900 text-white shadow-lg sticky top-0 z-30 no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+      <!-- Brand, Editable Factory Name & Fixed Engineer Badge -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amberroast-500 flex items-center justify-center text-white text-xl shadow-md shrink-0">
+            <i class="fa-solid fa-mug-hot"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 id="factory-title" class="text-base sm:text-xl font-extrabold tracking-tight"></h1>
+              <button onclick="openFactoryModal()" class="text-amber-300 hover:text-white p-1 rounded-lg transition" id="btn-edit-factory">
+                <i class="fa-solid fa-pen text-xs"></i>
+              </button>
+            </div>
+            <p id="factory-subtitle" class="text-xs text-amber-200/80"></p>
+            <!-- Fixed Permanent Engineer Signature Badge -->
+            <div class="mt-1.5 inline-flex items-center gap-2 bg-coffee-800/90 border border-amber-500/30 px-2.5 py-1 rounded-lg">
+              <i class="fa-solid fa-user-tie text-amber-400 text-xs"></i>
+              <div class="flex flex-wrap items-center gap-1.5 text-xs leading-none">
+                <span class="text-amber-300 font-semibold">Gıda Mühendisi</span>
+                <span class="text-amber-500/60">|</span>
+                <span class="text-white font-extrabold tracking-wide">Muhammed Abdulmünim</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Language Switcher -->
+        <button onclick="toggleLanguage()" class="lg:hidden bg-amberroast-500 hover:bg-amberroast-600 text-white font-bold text-xs px-3 py-2 rounded-xl shadow flex items-center gap-1.5 transition shrink-0">
+          <i class="fa-solid fa-globe"></i>
+          <span id="lang-switch-label-mobile">Türkçe</span>
+        </button>
+      </div>
+
+      <!-- Toolbar & Desktop Language Switcher -->
+      <div class="flex flex-wrap items-center gap-2">
+        <button onclick="toggleLanguage()" class="hidden lg:flex bg-amberroast-500 hover:bg-amberroast-600 text-white font-bold text-xs sm:text-sm px-3.5 py-2 rounded-xl shadow items-center gap-2 transition">
+          <i class="fa-solid fa-globe"></i>
+          <span id="lang-switch-label-desktop">Türkçe</span>
+        </button>
+
+        <button onclick="exportCSV()" class="bg-coffee-800 hover:bg-coffee-700 text-xs px-3 py-2 rounded-xl border border-coffee-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-file-excel text-emerald-400"></i>
+          <span data-i18n="btnExcel"></span>
+        </button>
+
+        <button onclick="window.print()" class="bg-coffee-800 hover:bg-coffee-700 text-xs px-3 py-2 rounded-xl border border-coffee-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-print text-sky-300"></i>
+          <span data-i18n="btnPrint"></span>
+        </button>
+
+        <button onclick="exportJSON()" class="bg-coffee-800 hover:bg-coffee-700 text-xs px-3 py-2 rounded-xl border border-coffee-700 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-download text-amber-400"></i>
+          <span data-i18n="btnBackup"></span>
+        </button>
+
+        <label class="bg-coffee-800 hover:bg-coffee-700 text-xs px-3 py-2 rounded-xl border border-coffee-700 flex items-center gap-1.5 transition cursor-pointer">
+          <i class="fa-solid fa-upload text-amber-300"></i>
+          <span data-i18n="btnRestore"></span>
+          <input type="file" accept=".json" class="hidden" onchange="importJSON(event)" />
+        </label>
+
+        <button onclick="openModal('reset-modal')" class="bg-red-950/70 hover:bg-red-900 text-xs px-3 py-2 rounded-xl border border-red-800/60 flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-rotate-left text-red-300"></i>
+          <span data-i18n="btnReset"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- KPI Cards -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-white rounded-2xl p-4 shadow-xs border border-stone-200 flex items-center justify-between print-card">
+        <div>
+          <p class="text-xs sm:text-sm text-stone-500 font-semibold" data-i18n="kpiTotalRisks"></p>
+          <p id="kpi-total" class="text-2xl sm:text-3xl font-extrabold text-coffee-900 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-xs border border-red-200 flex items-center justify-between print-card">
+        <div>
+          <p class="text-xs sm:text-sm text-stone-500 font-semibold" data-i18n="kpiHighRisks"></p>
+          <p id="kpi-high" class="text-2xl sm:text-3xl font-extrabold text-red-600 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-xs border border-orange-200 flex items-center justify-between print-card">
+        <div>
+          <p class="text-xs sm:text-sm text-stone-500 font-semibold" data-i18n="kpiOpenIssues"></p>
+          <p id="kpi-open" class="text-2xl sm:text-3xl font-extrabold text-orange-600 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-bug"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-xs border border-sky-200 flex items-center justify-between print-card">
+        <div>
+          <p class="text-xs sm:text-sm text-stone-500 font-semibold" data-i18n="kpiPendingVerify"></p>
+          <p id="kpi-verify" class="text-2xl sm:text-3xl font-extrabold text-sky-700 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-check-double"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white p-1.5 rounded-2xl shadow-xs border border-stone-200 flex flex-wrap gap-1.5 no-print">
+      <button onclick="switchTab('fmea')" id="tab-btn-fmea" class="tab-btn flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition bg-coffee-900 text-white shadow-xs">
+        <i class="fa-solid fa-table-list"></i>
+        <span data-i18n="tabFmea"></span>
+      </button>
+      <button onclick="switchTab('issues')" id="tab-btn-issues" class="tab-btn flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-stone-600 hover:bg-stone-100">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <span data-i18n="tabIssues"></span>
+        <span id="tab-badge-open" class="bg-red-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+      </button>
+      <button onclick="switchTab('stages')" id="tab-btn-stages" class="tab-btn flex-1 sm:flex-none px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition text-stone-600 hover:bg-stone-100">
+        <i class="fa-solid fa-sliders"></i>
+        <span data-i18n="tabStages"></span>
+      </button>
+    </nav>
+
+    <!-- TAB 1: LIVE FMEA REGISTER -->
+    <section id="panel-fmea" class="tab-panel space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3 no-print">
+        <div class="flex flex-wrap items-center gap-2 flex-1">
+          <div class="relative flex-1 min-w-[200px]">
+            <i class="fa-solid fa-search absolute top-3 text-stone-400 text-sm" style="inset-inline-start: 0.75rem;"></i>
+            <input type="text" id="fmea-search" oninput="renderFmeaTable()" class="w-full py-2 text-sm rounded-xl border border-stone-300 focus:outline-none focus:border-amberroast-500" style="padding-inline-start: 2.25rem; padding-inline-end: 0.75rem;" />
+          </div>
+
+          <select id="fmea-stage-filter" onchange="renderFmeaTable()" class="py-2 px-3 text-sm rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amberroast-500"></select>
+
+          <select id="fmea-level-filter" onchange="renderFmeaTable()" class="py-2 px-3 text-sm rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amberroast-500"></select>
+        </div>
+
+        <button onclick="openFmeaModal()" class="bg-amberroast-500 hover:bg-amberroast-600 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-plus"></i>
+          <span data-i18n="btnAddRisk"></span>
+        </button>
+      </div>
+
+      <!-- Formula Legend -->
+      <div class="bg-amber-50 border border-amber-200 rounded-xl px-4 py-2.5 text-xs text-coffee-900 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <i class="fa-solid fa-circle-info text-amberroast-600"></i>
+          <span data-i18n="rpnFormula"></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 font-bold">
+          <span class="px-2 py-0.5 rounded bg-red-100 text-red-800" data-i18n="legendHigh"></span>
+          <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800" data-i18n="legendMed"></span>
+          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800" data-i18n="legendLow"></span>
+        </div>
+      </div>
+
+      <!-- Desktop Table -->
+      <div class="hidden md:block bg-white rounded-2xl shadow-xs border border-stone-200 overflow-hidden print-card">
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse text-start">
+            <thead>
+              <tr class="bg-coffee-900 text-white text-xs sm:text-sm">
+                <th class="p-3 font-bold text-start" data-i18n="colStage"></th>
+                <th class="p-3 font-bold text-start" data-i18n="colFailure"></th>
+                <th class="p-3 font-bold text-start" data-i18n="colEffectCause"></th>
+                <th class="p-3 font-bold text-start" data-i18n="colControls"></th>
+                <th class="p-3 font-bold text-center">S</th>
+                <th class="p-3 font-bold text-center">O</th>
+                <th class="p-3 font-bold text-center">D</th>
+                <th class="p-3 font-bold text-center">RPN</th>
+                <th class="p-3 font-bold text-center" data-i18n="colLinked"></th>
+                <th class="p-3 font-bold text-center no-print" data-i18n="colActions"></th>
+              </tr>
+            </thead>
+            <tbody id="fmea-table-body" class="divide-y divide-stone-200 text-xs sm:text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Mobile Responsive Cards -->
+      <div id="fmea-mobile-cards" class="md:hidden space-y-3"></div>
+    </section>
+
+    <!-- TAB 2: COMPLAINTS & 8D ISSUES -->
+    <section id="panel-issues" class="tab-panel hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl shadow-xs border border-stone-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+        <div class="flex flex-wrap items-center gap-2">
+          <select id="issue-status-filter" onchange="renderIssuesList()" class="py-2 px-3 text-sm rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amberroast-500"></select>
+          <select id="issue-stage-filter" onchange="renderIssuesList()" class="py-2 px-3 text-sm rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amberroast-500"></select>
+        </div>
+
+        <button onclick="openIssueModal()" class="bg-red-600 hover:bg-red-700 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-2 transition">
+          <i class="fa-solid fa-plus-circle"></i>
+          <span data-i18n="btnLogIssue"></span>
+        </button>
+      </div>
+
+      <!-- Living Link Info Banner -->
+      <div class="bg-coffee-100 border border-coffee-600/20 rounded-xl p-3.5 text-xs sm:text-sm text-coffee-950 flex items-start gap-3">
+        <i class="fa-solid fa-link text-amberroast-600 text-lg mt-0.5"></i>
+        <p data-i18n="livingLinkBanner"></p>
+      </div>
+
+      <div id="issues-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- TAB 3: STAGES & SETTINGS -->
+    <section id="panel-stages" class="tab-panel hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-1 bg-white p-5 rounded-2xl shadow-xs border border-stone-200 space-y-4">
+          <h2 class="text-base font-bold text-coffee-900 flex items-center gap-2">
+            <i class="fa-solid fa-industry text-amberroast-500"></i>
+            <span data-i18n="stagesManageTitle"></span>
+          </h2>
+          <p class="text-xs text-stone-500" data-i18n="stagesManageDesc"></p>
+
+          <form onsubmit="addStage(event)" class="flex gap-2">
+            <input type="text" id="new-stage-name" required class="flex-1 px-3 py-2 text-sm rounded-xl border border-stone-300 focus:outline-none focus:border-amberroast-500" />
+            <button type="submit" class="bg-coffee-900 hover:bg-coffee-800 text-white px-4 py-2 rounded-xl text-sm font-bold transition" data-i18n="btnAdd"></button>
+          </form>
+
+          <ul id="stages-list" class="divide-y divide-stone-200"></ul>
+        </div>
+
+        <div class="lg:col-span-2 bg-white p-5 rounded-2xl shadow-xs border border-stone-200 space-y-4">
+          <h2 class="text-base font-bold text-coffee-900 flex items-center gap-2">
+            <i class="fa-solid fa-chart-simple text-amberroast-500"></i>
+            <span data-i18n="stagesChartTitle"></span>
+          </h2>
+          <p class="text-xs text-stone-500" data-i18n="stagesChartDesc"></p>
+          <div id="stages-analytics" class="space-y-4 pt-2"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: ADD/EDIT FMEA -->
+  <div id="fmea-modal" class="fixed inset-0 bg-black/60 z-40 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-stone-200 overflow-hidden my-8">
+      <div class="bg-coffee-900 text-white px-5 py-4 flex items-center justify-between">
+        <h3 id="fmea-modal-title" class="font-bold text-base sm:text-lg"></h3>
+        <button onclick="closeModal('fmea-modal')" class="text-stone-300 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form onsubmit="saveFmeaItem(event)" class="p-5 space-y-4 text-sm">
+        <input type="hidden" id="fmea-id" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblStage"></label>
+            <select id="fmea-stage" required class="w-full px-3 py-2 rounded-xl border border-stone-300 bg-white"></select>
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblFailureMode"></label>
+            <input type="text" id="fmea-failure" required class="w-full px-3 py-2 rounded-xl border border-stone-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblEffect"></label>
+            <input type="text" id="fmea-effect" required class="w-full px-3 py-2 rounded-xl border border-stone-300" />
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblCause"></label>
+            <input type="text" id="fmea-cause" required class="w-full px-3 py-2 rounded-xl border border-stone-300" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblControls"></label>
+            <input type="text" id="fmea-control" class="w-full px-3 py-2 rounded-xl border border-stone-300" />
+          </div>
+          <div>
+            <label class="block font-bold text-stone-700 mb-1" data-i18n="lblRecAction"></label>
+            <input type="text" id="fmea-rec-action" class="w-full px-3 py-2 rounded-xl border border-stone-300" />
+          </div>
+        </div>
+
+        <!-- S O D Scores -->
+        <div class="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-3">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs font-bold te
