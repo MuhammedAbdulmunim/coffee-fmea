@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="tr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kahve Fabrikası - Kalite Yönetimi | FMEA &amp; 8D</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Cairo', 'Inter', sans-serif;
+      background-color: #f8f5f2;
+      color: #231712;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff !important; padding: 0 !important; }
+      .print-flat { box-shadow: none !important; border-color: #d6d3d1 !important; }
+    }
+  </style>
+</head>
+<body class="min-h-screen p-3 md:p-6">
+  <header class="max-w-6xl mx-auto bg-gradient-to-br from-[#2c1a12] via-[#382117] to-[#1e110c] text-white rounded-3xl p-5 md:p-6 shadow-lg border border-amber-900/40">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-amber-500 text-stone-950 flex items-center justify-center shrink-0 shadow">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zm4-4v2m4-2v2m4-2v2" />
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h1 id="app-title" class="text-xl md:text-2xl font-extrabold tracking-tight">Kahve Fabrikası - Kalite Yönetimi</h1>
+            <button type="button" onclick="editSystemSubtitle()" title="Düzenle" class="no-print text-amber-300 hover:text-amber-200 p-1 rounded-lg">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+            </button>
+          </div>
+          <p id="app-subtitle" class="text-stone-300 text-xs md:text-sm mt-1">Canlı FMEA Risk Analizi ve 8D Şikayet / Üretim Arıza Takip Sistemi</p>
+          <div class="inline-flex items-center gap-2 mt-3 bg-stone-900/70 border border-amber-500/25 px-3 py-1.5 rounded-xl text-xs md:text-sm text-amber-300 font-semibold">
+            <span>👤</span>
+            <span id="engineer-sig">Gıda Mühendisi | Muhammed Abdulmünim</span>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" id="btn-lang" onclick="toggleLang()" class="no-print bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold px-4 py-2 rounded-xl text-sm flex items-center gap-2 shadow">
+        <span>🌐</span>
+        <span id="lang-label">العربية</span>
+      </button>
+    </div>
+
+    <div class="flex flex-wrap gap-2.5 mt-5 pt-4 border-t border-white/10 no-print">
+      <button type="button" onclick="exportExcel()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-3.5 py-2 rounded-xl text-xs md:text-sm flex items-center gap-1.5">
+        <span>📊</span>
+        <span id="btn-excel-txt">Excel İndir</span>
+      </button>
+      <button type="button" onclick="window.print()" class="bg-stone-700/90 hover:bg-stone-600 text-white font-semibold px-3.5 py-2 rounded-xl text-xs md:text-sm flex items-center gap-1.5">
+        <span>🖨️</span>
+        <span id="btn-print-txt">Yazdır A4</span>
+      </button>
+      <button type="button" onclick="exportBackup()" class="bg-amber-900/80 hover:bg-amber-800 text-amber-100 border border-amber-600/30 font-semibold px-3.5 py-2 rounded-xl text-xs md:text-sm flex items-center gap-1.5">
+        <span>💾</span>
+        <span id="btn-backup-txt">Yedek Al</span>
+      </button>
+      <button type="button" onclick="document.getElementById('backup-input').click()" class="bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-600/40 font-semibold px-3.5 py-2 rounded-xl text-xs md:text-sm flex items-center gap-1.5">
+        <span>📂</span>
+        <span id="btn-restore-file-txt">Geri Yükle</span>
+      </button>
+      <input type="file" id="backup-input" accept=".json,application/json" onchange="importBackup(event)" class="hidden" />
+      <button type="button" onclick="resetDemoData()" class="bg-rose-950/90 hover:bg-rose-900 text-rose-200 border border-rose-700/40 font-semibold px-3.5 py-2 rounded-xl text-xs md:text-sm flex items-center gap-1.5">
+        <span>↺</span>
+        <span id="btn-reset-txt">Sıfırla</span>
+      </button>
+    </div>
+  </header>
+    <main class="max-w-6xl mx-auto mt-6 space-y-5">
+    <!-- بطاقات الإحصاء الأربع -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/90 print-flat flex items-center justify-between">
+        <div>
+          <p id="kpi-total-label" class="text-xs font-semibold text-stone-500">Toplam Risk (FMEA)</p>
+          <p id="kpi-total" class="text-3xl font-extrabold text-stone-900 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center text-lg font-bold">🛡️</div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/90 print-flat flex items-center justify-between">
+        <div>
+          <p id="kpi-high-label" class="text-xs font-semibold text-stone-500">Yüksek Risk (RPN ≥ 100)</p>
+          <p id="kpi-high" class="text-3xl font-extrabold text-rose-600 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-lg font-bold">⚠️</div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/90 print-flat flex items-center justify-between">
+        <div>
+          <p id="kpi-8d-label" class="text-xs font-semibold text-stone-500">Açık Şikayet ve Arızalar</p>
+          <p id="kpi-8d" class="text-3xl font-extrabold text-orange-600 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-lg font-bold">🐞</div>
+      </div>
+
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200/90 print-flat flex items-center justify-between">
+        <div>
+          <p id="kpi-verify-label" class="text-xs font-semibold text-stone-500">Doğrulama Bekleyen</p>
+          <p id="kpi-verify" class="text-3xl font-extrabold text-sky-600 mt-1">0</p>
+        </div>
+        <div class="w-11 h-11 rounded-2xl bg-sky-100 text-sky-600 flex items-center justify-center text-lg font-bold">✔️</div>
+      </div>
+    </section>
+
+    <!-- التبويبات الرئيسية -->
+    <section class="bg-white rounded-2xl p-3 shadow-sm border border-stone-200/90 no-print">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <button type="button" id="tab-btn-fmea" onclick="switchTab('fmea')" class="py-3 px-4 rounded-xl text-sm font-bold bg-[#2c1a12] text-white flex items-center justify-center gap-2 shadow-sm">
+          <span>📋</span>
+          <span id="tab-fmea-txt">1. Canlı FMEA Risk Kaydı</span>
+        </button>
+        <button type="button" id="tab-btn-8d" onclick="switchTab('8d')" class="py-3 px-4 rounded-xl text-sm font-bold bg-stone-50 text-stone-700 hover:bg-stone-100 flex items-center justify-center gap-2">
+          <span>📄</span>
+          <span id="tab-8d-txt">2. Şikayetler ve Üretim Arızaları 8D</span>
+          <span id="badge-8d-count" class="px-2 py-0.5 text-xs rounded-full bg-rose-600 text-white font-extrabold">0</span>
+        </button>
+        <button type="button" id="tab-btn-stages" onclick="switchTab('stages')" class="py-3 px-4 rounded-xl text-sm font-bold bg-stone-50 text-stone-700 hover:bg-stone-100 flex items-center justify-center gap-2">
+          <span>⚙️</span>
+          <span id="tab-stages-txt">3. Üretim Aşamaları ve Ayarlar</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- القسم 1: FMEA -->
+    <div id="panel-fmea" class="space-y-4">
+      <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200/90 print-flat space-y-3 no-print">
+        <div class="relative">
+          <input id="fmea-search" type="text" oninput="renderFMEA()" placeholder="Hata türü, neden veya önlem ara..." class="w-full border border-stone-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-amber-600" />
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <select id="fmea-stage-filter" onchange="renderFMEA()" class="border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm bg-white">
+            <option value="ALL">Tüm Üretim Aşamaları</option>
+          </select>
+          <select id="fmea-risk-filter" onchange="renderFMEA()" class="border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm bg-white">
+            <option value="ALL">Tüm Risk Seviyeleri</option>
+            <option value="HIGH">Yüksek (RPN ≥ 100)</option>
+            <option value="MED">Orta (50 - 99)</option>
+            <option value="LOW">Düşük (&lt; 50)</option>
+          </select>
+        </div>
+        <button type="button" onclick="openFmeaModal()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 px-4 rounded-xl text-sm shadow-sm flex items-center justify-center gap-2">
+          <span>+</span>
+          <span id="btn-add-risk-txt">Yeni Risk Maddesi Ekle</span>
+        </button>
+      </section>
+
+      <section class="bg-amber-50/90 border border-amber-200/80 rounded-2xl p-4 text-xs md:text-sm text-stone-700 print-flat">
+        <div class="flex items-start gap-2.5">
+          <span class="text-amber-600 font-bold mt-0.5">ⓘ</span>
+          <div class="space-y-2">
+            <p id="rpn-formula-txt" class="font-semibold text-stone-800">Risk Öncelik Formülü: RPN = Şiddet (S) × Olasılık (O) × Tespit (D) [1-10 Ölçeği]</p>
+            <div class="flex flex-wrap gap-2 text-xs font-bold">
+              <span class="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-700">≥ 100 Yüksek</span>
+              <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-800">50 - 99 Orta</span>
+              <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800">&lt; 50 Düşük</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div id="fmea-cards" class="space-y-4"></div>
+    </div>
+
+    <!-- القسم 2: 8D -->
+    <div id="panel-8d" class="hidden space-y-4">
+      <section class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200/90 print-flat space-y-3 no-print">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="title-8d-sec" class="text-lg font-extrabold text-stone-900">8D Şikayet ve Üretim Arıza Kayıtları</h2>
+          <button type="button" onclick="open8dModal()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-1.5">
+            <span>+</span>
+            <span id="btn-add-8d-txt">Yeni 8D Kaydı Aç</span>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <input id="d8-search" type="text" oninput="render8D()" placeholder="Şikayet, parti no veya kök neden ara..." class="border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm" />
+          <select id="d8-status-filter" onchange="render8D()" class="border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm bg-white">
+            <option value="ALL">Tüm Durumlar</option>
+            <option value="OPEN">Açık (D1-D4)</option>
+            <option value="VERIFY">Doğrulama Bekleyen (D5-D7)</option>
+            <option value="CLOSED">Kapalı (D8)</option>
+          </select>
+        </div>
+      </section>
+      <div id="d8-cards" class="space-y-4"></div>
+    </div>
+
+    <!-- القسم 3: مراحل الإنتاج والإعدادات -->
+    <div id="panel-stages" class="hidden space-y-4">
+      <section class="bg-white rounded-2xl p-5 shadow-sm border border-stone-200/90 space-y-4">
+        <h2 id="title-stages-sec" class="text-lg font-extrabold text-stone-900">Üretim Aşamaları ve Sistem Bilgileri</h2>
+        <div class="flex flex-col sm:flex-row gap-2.5">
+          <input id="new-stage-name" type="text" placeholder="Yeni üretim aşaması adı (ör: Paketleme &amp; Metal Dedektör)" class="flex-1 border border-stone-200 rounded-xl px-3.5 py-2.5 text-sm" />
+          <button type="button" onclick="addStage()" class="bg-[#2c1a12] hover:bg-stone-800 text-white font-bold px-4 py-2.5 rounded-xl text-sm">Aşama Ekle</button>
+        </div>
+        <div id="stages-list" class="grid grid-cols-1 md:grid-cols-2 gap-2.5"></div>
+      </section>
+    </div>
+  </main>
+    <!-- نافذة إضافة / تعديل عنصر FMEA -->
+  <div id="fmea-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 no-print">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-5 md:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="fmea-modal-title" class="text-lg font-extrabold text-stone-900">Yeni Risk Maddesi Ekle</h3>
+        <button type="button" onclick="closeFmeaModal()" class="text-stone-400 hover:text-stone-700 text-xl font-bold">✕</button>
+      </div>
+      <form id="fmea-modal-form" onsubmit="saveFmeaItem(event)" class="space-y-3">
+        <input type="hidden" id="fmea-edit-id" />
+        <div>
+          <label id="lbl-fmea-stage" class="block text-xs font-bold text-stone-600 mb-1">Üretim Aşaması</label>
+          <select id="fmea-stage-input" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white"></select>
+        </div>
+        <div>
+          <label id="lbl-fmea-mode" class="block text-xs font-bold text-stone-600 mb-1">Hata Türü / Modu</label>
+          <input id="fmea-mode-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-fmea-effect" class="block text-xs font-bold text-stone-600 mb-1">Etki (Effect)</label>
+          <input id="fmea-effect-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-fmea-cause" class="block text-xs font-bold text-stone-600 mb-1">Kök Neden (Root Cause)</label>
+          <input id="fmea-cause-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-fmea-action" class="block text-xs font-bold text-stone-600 mb-1">Önlem / Düzeltici Faaliyet</label>
+          <input id="fmea-action-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1">S (1-10)</label>
+            <input id="fmea-s-input" type="number" min="1" max="10" value="5" required oninput="updateModalRpnPreview()" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-center font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1">O (1-10)</label>
+            <input id="fmea-o-input" type="number" min="1" max="10" value="5" required oninput="updateModalRpnPreview()" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-center font-bold" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-stone-600 mb-1">D (1-10)</label>
+            <input id="fmea-d-input" type="number" min="1" max="10" value="5" required oninput="updateModalRpnPreview()" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm text-center font-bold" />
+          </div>
+        </div>
+        <div class="bg-stone-100 rounded-xl p-3 flex items-center justify-between text-sm font-bold">
+          <span>RPN:</span>
+          <span id="modal-rpn-preview" class="text-lg text-rose-600">125</span>
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="closeFmeaModal()" id="btn-cancel-fmea" class="px-4 py-2 rounded-xl border text-sm font-semibold">İptal</button>
+          <button type="submit" id="btn-save-fmea" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- نافذة إضافة / تعديل سجل 8D -->
+  <div id="d8-modal" class="fixed inset-0 bg-black/60 hidden items-center justify-center p-4 z-50 no-print">
+    <div class="bg-white rounded-3xl max-w-xl w-full p-5 md:p-6 shadow-xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3">
+        <h3 id="d8-modal-title" class="text-lg font-extrabold text-stone-900">Yeni 8D Kaydı Aç</h3>
+        <button type="button" onclick="close8dModal()" class="text-stone-400 hover:text-stone-700 text-xl font-bold">✕</button>
+      </div>
+      <form id="d8-modal-form" onsubmit="save8dItem(event)" class="space-y-3">
+        <input type="hidden" id="d8-edit-id" />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label id="lbl-d8-batch" class="block text-xs font-bold text-stone-600 mb-1">Parti / Lot No</label>
+            <input id="d8-batch-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label id="lbl-d8-status" class="block text-xs font-bold text-stone-600 mb-1">Durum</label>
+            <select id="d8-status-input" class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm bg-white">
+              <option value="OPEN">OPEN</option>
+              <option value="VERIFY">VERIFY</option>
+              <option value="CLOSED">CLOSED</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label id="lbl-d8-problem" class="block text-xs font-bold text-stone-600 mb-1">Şikayet / Arıza Tanımı (D2)</label>
+          <input id="d8-problem-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-d8-containment" class="block text-xs font-bold text-stone-600 mb-1">Acil Önlem / Karantina (D3)</label>
+          <input id="d8-containment-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-d8-root" class="block text-xs font-bold text-stone-600 mb-1">Kök Neden (D4)</label>
+          <input id="d8-root-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div>
+          <label id="lbl-d8-action" class="block text-xs font-bold text-stone-600 mb-1">Kalıcı Düzeltici Faaliyet (D5-D7)</label>
+          <input id="d8-action-input" type="text" required class="w-full border border-stone-200 rounded-xl px-3 py-2 text-sm" />
+        </div>
+        <div class="flex justify-end gap-2 pt-2">
+          <button type="button" onclick="close8dModal()" id="btn-cancel-8d" class="px-4 py-2 rounded-xl border text-sm font-semibold">İptal</button>
+          <button type="submit" id="btn-save-8d" class="px-5 py-2 rounded-xl bg-rose-700 hover:bg-rose-600 text-white text-sm font-bold">Kaydet</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'coffee_fmea_8d_complete_v1';
+    let lang = 'tr';
+    let activeTab = 'fmea';
+
+    const defaultStages = [
+      { id: '1', tr: '1. Yeşil Kahve Kabul ve Depolama', ar: '1. استلام وتخزين القهوة الخضراء' },
+      { id: '2', tr: '2. Kavurma ve Soğutma', ar: '2. التحميص والتبريد' },
+      { id: '3', tr: '3. Öğütme ve Karıştırma', ar: '3. الطحن والخلط' },
+      { id: '4', tr: '4. Şase Dolum ve Isıl Yapıştırma', ar: '4. تعبئة الأظرف واللحام الحراري' },
+      { id: '5', tr: '5. Dış Ambalaj ve Etiketleme', ar: '5. التغليف الخارجي والوضع الملصق' }
+    ];
+
+    const defaultFmea = [
+      {
+        id: 101, stageId: '4', s: 9, o: 5, d: 6,
+        tr: {
+          mode: 'Şase ısıl yapıştırma zayıflığı ve hava kaçağı',
+          effect: 'Tazelik kaybı, nemlenme ve aroma düşüşü',
+          cause: 'Çene sıcaklığı veya bekleme süresinde dalgalanma',
+          action: 'Vardiya başı sızdırmazlık testi ve sıcaklık sensörü kontrolü'
+        },
+        ar: {
+          mode: 'ضعف اللحام الحراري للظرف وتسرب الهواء',
+          effect: 'فقدان الطزاجة وامتصاص الرطوبة وتراجع النكهة',
+          cause: 'تذبذب حرارة الفك الحراري أو زمن الكبس',
+          action: 'اختبار إحكام الغلق بداية كل وردية ومراقبة حساس الحرارة'
+        }
+      },
+      {
+        id: 102, stageId: '3', s: 7, o: 6, d: 5,
+        tr: {
+          mode: 'Öğütme inceliği sapması (kalın öğütme veya topaklanma)',
+          effect: 'Türk kahvesi veya espressoda yetersiz ekstraksiyon ve köpük kaybı',
+          cause: 'Değirmen bıçaklarının aşınması veya aşırı ısınma',
+          action: 'Elek analizi (partikül boyutu) ve bıçak kalibrasyon planı'
+        },
+        ar: {
+          mode: 'انحراف نعومة الطحن (طحن خشن أو تكتل)',
+          effect: 'ضعف الاستخلاص وفقدان الوجه/الرغوة في القهوة التركية أو الإسبريسو',
+          cause: 'تآكل شفرات المطحنة أو ارتفاع حرارتها',
+          action: 'فحص التدرج الحبيبي وجدولة معايرة وصيانة الشفرات'
+        }
+      },
+      {
+        id: 103, stageId: '2', s: 8, o: 4, d: 5,
+        tr: {
+          mode: 'Aşırı kavurma kaynaklı yanık / acı tat',
+          effect: 'Müşterilerden gelen tat değişimi ve acılık şikayetleri',
+          cause: 'Kavurma makinesi sıcaklık sensörü sapması veya soğutma gecikmesi',
+          action: 'Sensör kalibrasyonu ve numune renk/tat onayı (Agtron/duyusal)'
+        },
+        ar: {
+          mode: 'طعم محروق أو مر ناتج عن زيادة التحميص',
+          effect: 'شكاوى العملاء من تغير الطعم والمرارة الزائدة',
+          cause: 'انحراف حساس حرارة المحمصة أو تأخر التبريد',
+          action: 'معايرة الحساس واعتماد العينة لونياً وحسياً قبل الإطلاق'
+        }
+      },
+      {
+        id: 104, stageId: '1', s: 8, o: 3, d: 4,
+        tr: {
+          mode: 'Yeşil çekirdek nem oranının yüksek olması (> %12)',
+          effect: 'Düzensiz kavurma, tat bozulması ve küf riski',
+          cause: 'Giriş kontrolünde nem ölçülmemesi veya depo havalandırma yetersizliği',
+          action: 'Her partide nem ölçümü ve depo bağıl nem/havalandırma takibi'
+        },
+        ar: {
+          mode: 'ارتفاع نسبة رطوبة البن الأخضر (> 12%)',
+          effect: 'عدم انتظام التحميص وتغير الطعم وخطر العفن',
+          cause: 'عدم قياس الرطوبة عند الاستلام أو ضعف تهوية المستودع',
+          action: 'قياس الرطوبة لكل إرسالية ومراقبة رطوبة وتهوية المستودع'
+        }
+      },
+      {
+        id: 105, stageId: '5', s: 8, o: 3, d: 3,
+        tr: {
+          mode: 'Son kullanma tarihi silikliği veya yanlış etiketleme',
+          effect: 'Pazardan ürün iadesi ve yasal uygunsuzluk',
+          cause: 'Yazıcı mürekkebi azalması veya ürün değişiminde rulo unutulması',
+          action: 'Etiket/SKT barkod okunabilirlik kontrolü ve hat değişim kontrol listesi'
+        },
+        ar: {
+          mode: 'عدم وضوح تاريخ الصلاحية أو خطأ في الملصق',
+          effect: 'مرتجعات من السوق ومخالفة اشتراطات البطاقة الغذائية',
+          cause: 'نقص حبر الطابعة أو نسيان تغيير بكرة الملصق عند تبديل الصنف',
+          action: 'فحص وضوح تاريخ الصلاحية وتطبيق قائمة تحقق تغيير الصنف'
+        }
+      }
+    ];
+
+    const default8d = [
+      {
+        id: 201, batch: 'LOT-2026-355P', status: 'OPEN',
+        tr: {
+          problem: 'Şase paketlerde hava girişi ve tazelik şikayeti',
+          containment: 'Şüpheli partinin sevkiyatı durduruldu ve stok karantinaya alındı',
+          root: 'Isıl yapıştırma çenesinde basınç dengesizliği',
+          action: 'Çene basıncı ayarı ve her 30 dakikada bir sızdırmazlık kontrolü'
+        },
+        ar: {
+          problem: 'شكوى دخول هواء وفقدان طزاجة في عبوات الظرف',
+          containment: 'إيقاف شحن الدفعة المشكوك فيها وعزل المخزون في الحجر',
+          root: 'عدم توازن ضغط فك اللحام الحراري',
+          action: 'ضبط ضغط اللحام وإجراء اختبار إحكام كل 30 دقيقة'
+        }
+      },
+      {
+        id: 202, batch: 'LOT-2026-356P', status: 'OPEN',
+        tr: {
+          problem: 'Öğütülmüş kahvede partikül boyutu dalgalanması',
+          containment: 'İlgili parti ayrıldı ve elek kontrolünden geçirildi',
+          root: 'Değirmen bıçak aralığının titreşimle kayması',
+          action: 'Bıçak kilitleme somunu sabitlemesi ve vardiya kontrol formu'
+        },
+        ar: {
+          problem: 'تذبذب في نعومة القهوة المطحونة بين دفعات التعبئة',
+          containment: 'عزل الدفعة وفحصها بالمنخل القياسي',
+          root: 'تحرك معايرة شفرات الطحنة بسبب الاهتزاز',
+          action: 'تثبيت قفل الشفرات واعتماد نموذج فحص دوري كل وردية'
+        }
+      },
+      {
+        id: 203, batch: 'LOT-2026-349P', status: 'VERIFY',
+        tr: {
+          problem: 'Dış kolide parti ve üretim tarihi baskı kontrastı düşük',
+          containment: 'Etkilenen koliler yeniden etiketlendi',
+          root: 'Termal transfer şeridi gerginlik ayarı eksikliği',
+          action: 'Şerit gerginlik kalibrasyonu ve doğrulama testi devam ediyor'
+        },
+        ar: {
+          problem: 'ضعف تباين طباعة رقم الدفعة وتاريخ الإنتاج على الكرتون الخارجي',
+          containment: 'إعادة لصق البطاقات للكرتونات المتأثرة',
+          root: 'نقص معايرة شد شريط الطباعة الحراري',
+          action: 'معايرة شد الشريط وجارٍ التحقق من ثبات الأداء'
+        }
+      }
+    ];
+        let state = loadState();
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.fmea) && Array.isArray(parsed.d8) && Array.isArray(parsed.stages)) {
+            return parsed;
+          }
+        }
+      } catch (_) {}
+      return {
+        subtitleTr: 'Canlı FMEA Risk Analizi ve 8D Şikayet / Üretim Arıza Takip Sistemi',
+        subtitleAr: 'تحليل مخاطر FMEA المباشر ونظام متابعة شكاوى وأعطال الإنتاج 8D',
+        stages: JSON.parse(JSON.stringify(defaultStages)),
+        fmea: JSON.parse(JSON.stringify(defaultFmea)),
+        d8: JSON.parse(JSON.stringify(default8d))
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      renderAll();
+    }
+
+    function resetDemoData() {
+      state = {
+        subtitleTr: 'Canlı FMEA Risk Analizi ve 8D Şikayet / Üretim Arıza Takip Sistemi',
+        subtitleAr: 'تحليل مخاطر FMEA المباشر ونظام متابعة شكاوى وأعطال الإنتاج 8D',
+        stages: JSON.parse(JSON.stringify(defaultStages)),
+        fmea: JSON.parse(JSON.stringify(defaultFmea)),
+        d8: JSON.parse(JSON.stringify(default8d))
+      };
+      saveState();
+    }
+
+    function toggleLang() {
+      lang = lang === 'tr' ? 'ar' : 'tr';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+      renderAll();
+    }
+
+    function switchTab(tab) {
+      activeTab = tab;
+      document.getElementById('panel-fmea').classList.toggle('hidden', tab !== 'fmea');
+      document.getElementById('panel-8d').classList.toggle('hidden', tab !== '8d');
+      document.getElementById('panel-stages').classList.toggle('hidden', tab !== 'stages');
+
+      const activeCls = 'py-3 px-4 rounded-xl text-sm font-bold bg-[#2c1a12] text-white flex items-center justify-center gap-2 shadow-sm';
+      const idleCls = 'py-3 px-4 rounded-xl text-sm font-bold bg-stone-50 text-stone-700 hover:bg-stone-100 flex items-center justify-center gap-2';
+      document.getElementById('tab-btn-fmea').className = tab === 'fmea' ? activeCls : idleCls;
+      document.getElementById('tab-btn-8d').className = tab === '8d' ? activeCls : idleCls;
+      document.getElementById('tab-btn-stages').className = tab === 'stages' ? activeCls : idleCls;
+    }
+
+    function editSystemSubtitle() {
+      const current = lang === 'ar' ? state.subtitleAr : state.subtitleTr;
+      const promptMsg = lang === 'ar' ? 'تعديل وصف النظام:' : 'Sistem açıklamasını düzenle:';
+      const val = prompt(promptMsg, current);
+      if (val && val.trim()) {
+        if (lang === 'ar') state.subtitleAr = val.trim();
+        else state.subtitleTr = val.trim();
+        saveState();
+      }
+    }
+
+    function getStageName(stageId) {
+      const st = state.stages.find(s => String(s.id) === String(stageId));
+      if (!st) return lang === 'ar' ? 'مرحلة عامة' : 'Genel Aşama';
+      return lang === 'ar' ? st.ar : st.tr;
+    }
+
+    function getRiskInfo(rpn) {
+      if (rpn >= 100) {
+        return {
+          level: lang === 'ar' ? 'مرتفع' : 'Yüksek',
+          badge: 'bg-rose-100 text-rose-700 border border-rose-200',
+          tier: 'HIGH'
+        };
+      }
+      if (rpn >= 50) {
+        return {
+          level: lang === 'ar' ? 'متوسط' : 'Orta',
+          badge: 'bg-amber-100 text-amber-800 border border-amber-200',
+          tier: 'MED'
+        };
+      }
+      return {
+        level: lang === 'ar' ? 'منخفض' : 'Düşük',
+        badge: 'bg-emerald-100 text-emerald-800 border border-emerald-200',
+        tier: 'LOW'
+      };
+    }
+
+    function updateKPIs() {
+      const totalRisk = state.fmea.length;
+      const highRisk = state.fmea.filter(x => (x.s * x.o * x.d) >= 100).length;
+      const open8d = state.d8.filter(x => x.status === 'OPEN').length;
+      const verify8d = state.d8.filter(x => x.status === 'VERIFY').length;
+
+      document.getElementById('kpi-total').textContent = totalRisk;
+      document.getElementById('kpi-high').textContent = highRisk;
+      document.getElementById('kpi-8d').textContent = open8d;
+      document.getElementById('kpi-verify').textContent = verify8d;
+      document.getElementById('badge-8d-count').textContent = open8d + verify8d;
+    }
+
+    function renderLabels() {
+      const isAr = lang === 'ar';
+      document.getElementById('app-title').textContent = isAr ? 'معمل القهوة - إدارة الجودة' : 'Kahve Fabrikası - Kalite Yönetimi';
+      document.getElementById('app-subtitle').textContent = isAr ? state.subtitleAr : state.subtitleTr;
+      document.getElementById('engineer-sig').textContent = 'Gıda Mühendisi | Muhammed Abdulmünim';
+      document.getElementById('lang-label').textContent = isAr ? 'Türkçe' : 'العربية';
+
+      document.getElementById('btn-excel-txt').textContent = isAr ? 'تصدير Excel' : 'Excel İndir';
+      document.getElementById('btn-print-txt').textContent = isAr ? 'طباعة A4' : 'Yazdır A4';
+      document.getElementById('btn-backup-txt').textContent = isAr ? 'حفظ نسخة' : 'Yedek Al';
+      document.getElementById('btn-restore-file-txt').textContent = isAr ? 'استعادة ملف' : 'Geri Yükle';
+      document.getElementById('btn-reset-txt').textContent = isAr ? 'إعادة ضبط' : 'Sıfırla';
+
+      document.getElementById('kpi-total-label').textContent = isAr ? 'إجمالي المخاطر (FMEA)' : 'Toplam Risk (FMEA)';
+      document.getElementById('kpi-high-label').textContent = isAr ? 'مخاطر عالية (RPN ≥ 100)' : 'Yüksek Risk (RPN ≥ 100)';
+      document.getElementById('kpi-8d-label').textContent = isAr ? 'شكاوى وأعطال مفتوحة' : 'Açık Şikayet ve Arızalar';
+      document.getElementById('kpi-verify-label').textContent = isAr ? 'بانتظار التحقق' : 'Doğrulama Bekleyen';
+
+      document.getElementById('tab-fmea-txt').textContent = isAr ? '1. سجل مخاطر FMEA المباشر' : '1. Canlı FMEA Risk Kaydı';
+      document.getElementById('tab-8d-txt').textContent = isAr ? '2. الشكاوى وأعطال الإنتاج 8D' : '2. Şikayetler ve Üretim Arızaları 8D';
+      document.getElementById('tab-stages-txt').textContent = isAr ? '3. مراحل الإنتاج والإعدادات' : '3. Üretim Aşamaları ve Ayarlar';
+
+      document.getElementById('fmea-search').placeholder = isAr ? 'ابحث عن نمط فشل أو سبب أو إجراء...' : 'Hata türü, neden veya önlem ara...';
+      document.getElementById('btn-add-risk-txt').textContent = isAr ? 'إضافة عنصر خطر جديد' : 'Yeni Risk Maddesi Ekle';
+      document.getElementById('rpn-formula-txt').textContent = isAr
+        ? 'صيغة أولوية الخطر: RPN = الشدة (S) × التكرار (O) × الاكتشاف (D) [مقياس 1-10]'
+        : 'Risk Öncelik Formülü: RPN = Şiddet (S) × Olasılık (O) × Tespit (D) [1-10 Ölçeği]';
+
+      const riskFilter = document.getElementById('fmea-risk-filter');
+      riskFilter.options[0].text = isAr ? 'جميع مستويات الخطورة' : 'Tüm Risk Seviyeleri';
+      riskFilter.options[1].text = isAr ? 'مرتفع (RPN ≥ 100)' : 'Yüksek (RPN ≥ 100)';
+      riskFilter.options[2].text = isAr ? 'متوسط (50 - 99)' : 'Orta (50 - 99)';
+      riskFilter.options[3].text = isAr ? 'منخفض (< 50)' : 'Düşük (< 50)';
+
+      const stageFilter = document.getElementById('fmea-stage-filter');
+      const prevStageVal = stageFilter.value || 'ALL';
+      stageFilter.innerHTML = `<option value="ALL">${isAr ? 'جميع مراحل الإنتاج' : 'Tüm Üretim Aşamaları'}</option>` +
+        state.stages.map(st => `<option value="${st.id}">${isAr ? st.ar : st.tr}</option>`).join('');
+      stageFilter.value = [...stageFilter.options].some(o => o.value === prevStageVal) ? prevStageVal : 'ALL';
+
+      document.getElementById('title-8d-sec').textContent = isAr ? 'سجلات شكاوى وأعطال الإنتاج 8D' : '8D Şikayet ve Üretim Arıza Kayıtları';
+      document.getElementById('btn-add-8d-txt').textContent = isAr ? 'فتح سجل 8D جديد' : 'Yeni 8D Kaydı Aç';
+      document.getElementById('d8-search').placeholder = isAr ? 'ابحث عن شكوى أو رقم دفعة أو سبب جذري...' : 'Şikayet, parti no veya kök neden ara...';
+
+      const d8Filter = document.getElementById('d8-status-filter');
+      d8Filter.options[0].text = isAr ? 'جميع الحالات' : 'Tüm Durumlar';
+      d8Filter.options[1].text = isAr ? 'مفتوح (D1-D4)' : 'Açık (D1-D4)';
+      d8Filter.options[2].text = isAr ? 'بانتظار التحقق (D5-D7)' : 'Doğrulama Bekleyen (D5-D7)';
+      d8Filter.options[3].text = isAr ? 'مغلق (D8)' : 'Kapalı (D8)';
+
+      document.getElementById('title-stages-sec').textContent = isAr ? 'مراحل الإنتاج وإعدادات النظام' : 'Üretim Aşamaları ve Sistem Bilgileri';
+      document.getElementById('new-stage-name').placeholder = isAr ? 'اسم مرحلة إنتاج جديدة (مثال: التعبئة وكاشف المعادن)' : 'Yeni üretim aşaması adı (ör: Paketleme & Metal Dedektör)';
+    }
+
+    function renderFMEA() {
+      const isAr = lang === 'ar';
+      const q = (document.getElementById('fmea-search').value || '').trim().toLowerCase();
+      const stageVal = document.getElementById('fmea-stage-filter').value;
+      const riskVal = document.getElementById('fmea-risk-filter').value;
+
+      const filtered = state.fmea
+        .map(item => ({ ...item, rpn: Number(item.s) * Number(item.o) * Number(item.d) }))
+        .filter(item => {
+          const c = isAr ? item.ar : item.tr;
+          const info = getRiskInfo(item.rpn);
+          if (stageVal !== 'ALL' && String(item.stageId) !== String(stageVal)) return false;
+          if (riskVal !== 'ALL' && info.tier !== riskVal) return false;
+          if (!q) return true;
+          return [c.mode, c.effect, c.cause, c.action, getStageName(item.stageId)]
+            .some(txt => (txt || '').toLowerCase().includes(q));
+        })
+        .sort((a, b) => b.rpn - a.rpn);
+
+      const container = document.getElementById('fmea-cards');
+      if (!filtered.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-sm text-stone-500 border border-stone-200">${isAr ? 'لا توجد عناصر مطابقة للبحث أو الفلتر.' : 'Filtreye uygun risk kaydı bulunamadı.'}</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const c = isAr ? item.ar : item.tr;
+        const info = getRiskInfo(item.rpn);
+        const linked8dCount = state.d8.filter(d => (isAr ? d.ar.problem : d.tr.problem).toLowerCase().includes((c.mode || '').slice(0, 12).toLowerCase())).length;
+
+        return `
+          <article class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200/90 print-flat space-y-2.5">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+              <span class="text-xs md:text-sm font-bold text-amber-800">${getStageName(item.stageId)}</span>
+              <span class="px-3 py-1 rounded-xl text-xs font-extrabold ${info.badge}">RPN: ${item.rpn} (${info.level})</span>
+            </div>
+            <h3 class="text-base md:text-lg font-extrabold text-stone-900">${c.mode}</h3>
+            <div class="text-xs md:text-sm text-stone-600 space-y-1">
+              <p><strong class="text-stone-800">${isAr ? 'الأثر:' : 'Etki:'}</strong> ${c.effect}</p>
+              <p><strong class="text-stone-800">${isAr ? 'السبب الجذري:' : 'Kök Neden:'}</strong> ${c.cause}</p>
+              <p><strong class="text-stone-800">${isAr ? 'الإجراء / الوقاية:' : 'Önlem:'}</strong> ${c.action}</p>
+            </div>
+            <div class="pt-2.5 border-t border-stone-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="font-bold text-stone-700 flex items-center gap-3">
+                <span>S: <span class="text-stone-950">${item.s}</span></span>
+                <span>O: <span class="text-stone-950">${item.o}</span></span>
+                <span>D: <span class="text-stone-950">${item.d}</span></span>
+              </div>
+              <div class="flex items-center gap-2 no-print">
+                <button type="button" onclick="open8dFromFmea(${item.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-700 font-bold hover:bg-rose-100">
+                  8D ${linked8dCount > 0 ? `(${linked8dCount})` : '+'}
+                </button>
+                <button type="button" onclick="openFmeaModal(${item.id})" class="p-1.5 rounded-lg text-stone-600 hover:bg-stone-100" title="${isAr ? 'تعديل' : 'Düzenle'}">✏️</button>
+                <button type="button" onclick="deleteFmeaItem(${item.id})" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="${isAr ? 'حذف' : 'Sil'}">🗑️</button>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+        function render8D() {
+      const isAr = lang === 'ar';
+      const q = (document.getElementById('d8-search').value || '').trim().toLowerCase();
+      const stFilter = document.getElementById('d8-status-filter').value;
+
+      const filtered = state.d8.filter(item => {
+        const c = isAr ? item.ar : item.tr;
+        if (stFilter !== 'ALL' && item.status !== stFilter) return false;
+        if (!q) return true;
+        return [item.batch, c.problem, c.containment, c.root, c.action]
+          .some(txt => (txt || '').toLowerCase().includes(q));
+      });
+
+      const container = document.getElementById('d8-cards');
+      if (!filtered.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-sm text-stone-500 border border-stone-200">${isAr ? 'لا توجد سجلات 8D مطابقة.' : '8D kaydı bulunamadı.'}</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(item => {
+        const c = isAr ? item.ar : item.tr;
+        const stMap = {
+          OPEN: { txt: isAr ? 'مفتوح' : 'Açık', cls: 'bg-rose-100 text-rose-700' },
+          VERIFY: { txt: isAr ? 'بانتظار التحقق' : 'Doğrulama', cls: 'bg-sky-100 text-sky-700' },
+          CLOSED: { txt: isAr ? 'مغلق' : 'Kapalı', cls: 'bg-emerald-100 text-emerald-700' }
+        };
+        const badge = stMap[item.status] || stMap.OPEN;
+
+        return `
+          <article class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200/90 print-flat space-y-2.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-stone-100 text-stone-800">${item.batch}</span>
+              <span class="text-xs font-extrabold px-3 py-1 rounded-xl ${badge.cls}">${badge.txt}</span>
+            </div>
+            <h3 class="text-base font-extrabold text-stone-900">${c.problem}</h3>
+            <div class="text-xs md:text-sm text-stone-600 space-y-1">
+              <p><strong class="text-stone-800">${isAr ? 'الإجراء الفوري (D3):' : 'Acil Önlem (D3):'}</strong> ${c.containment}</p>
+              <p><strong class="text-stone-800">${isAr ? 'السبب الجذري (D4):' : 'Kök Neden (D4):'}</strong> ${c.root}</p>
+              <p><strong class="text-stone-800">${isAr ? 'الإجراء الدائم (D5-D7):' : 'Kalıcı Faaliyet (D5-D7):'}</strong> ${c.action}</p>
+            </div>
+            <div class="pt-2.5 border-t border-stone-100 flex items-center justify-end gap-2 no-print text-xs">
+              <button type="button" onclick="cycle8dStatus(${item.id})" class="px-3 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 font-bold text-stone-700">
+                ${isAr ? 'تبديل الحالة' : 'Durum Değiştir'}
+              </button>
+              <button type="button" onclick="open8dModal(${item.id})" class="px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 font-bold text-amber-800">
+                ${isAr ? 'تعديل' : 'Düzenle'}
+              </button>
+              <button type="button" onclick="delete8dItem(${item.id})" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 font-bold text-rose-700">
+                ${isAr ? 'حذف' : 'Sil'}
+              </button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderStages() {
+      const isAr = lang === 'ar';
+      const list = document.getElementById('stages-list');
+      list.innerHTML = state.stages.map(st => `
+        <div class="flex items-center justify-between gap-2 p-3 rounded-xl border border-stone-200 bg-stone-50/70">
+          <span class="text-sm font-bold text-stone-800">${isAr ? st.ar : st.tr}</span>
+          <button type="button" onclick="deleteStage('${st.id}')" class="text-xs font-bold text-rose-600 hover:underline no-print">${isAr ? 'حذف' : 'Sil'}</button>
+        </div>
+      `).join('');
+    }
+
+    function addStage() {
+      const inp = document.getElementById('new-stage-name');
+      const val = inp.value.trim();
+      if (!val) return;
+      const nextId = String(Date.now());
+      state.stages.push({ id: nextId, tr: val, ar: val });
+      inp.value = '';
+      saveState();
+    }
+
+    function deleteStage(id) {
+      if (state.stages.length <= 1) return;
+      state.stages = state.stages.filter(s => String(s.id) !== String(id));
+      saveState();
+    }
+
+    function updateModalRpnPreview() {
+      const s = Math.min(10, Math.max(1, Number(document.getElementById('fmea-s-input').value) || 1));
+      const o = Math.min(10, Math.max(1, Number(document.getElementById('fmea-o-input').value) || 1));
+      const d = Math.min(10, Math.max(1, Number(document.getElementById('fmea-d-input').value) || 1));
+      document.getElementById('modal-rpn-preview').textContent = s * o * d;
+    }
+
+    function openFmeaModal(id = null) {
+      const isAr = lang === 'ar';
+      const stageSel = document.getElementById('fmea-stage-input');
+      stageSel.innerHTML = state.stages.map(st => `<option value="${st.id}">${isAr ? st.ar : st.tr}</option>`).join('');
+
+      document.getElementById('fmea-modal-title').textContent = id
+        ? (isAr ? 'تعديل عنصر خطر FMEA' : 'FMEA Risk Maddesini Düzenle')
+        : (isAr ? 'إضافة عنصر خطر جديد' : 'Yeni Risk Maddesi Ekle');
+
+      if (id) {
+        const item = state.fmea.find(x => x.id === id);
+        if (!item) return;
+        const c = isAr ? item.ar : item.tr;
+        document.getElementById('fmea-edit-id').value = item.id;
+        stageSel.value = item.stageId;
+        document.getElementById('fmea-mode-input').value = c.mode || '';
+        document.getElementById('fmea-effect-input').value = c.effect || '';
+        document.getElementById('fmea-cause-input').value = c.cause || '';
+        document.getElementById('fmea-action-input').value = c.action || '';
+        document.getElementById('fmea-s-input').value = item.s;
+        document.getElementById('fmea-o-input').value = item.o;
+        document.getElementById('fmea-d-input').value = item.d;
+      } else {
+        document.getElementById('fmea-edit-id').value = '';
+        document.getElementById('fmea-modal-form').reset();
+        document.getElementById('fmea-s-input').value = 5;
+        document.getElementById('fmea-o-input').value = 5;
+        document.getElementById('fmea-d-input').value = 5;
+      }
+
+      updateModalRpnPreview();
+      const modal = document.getElementById('fmea-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeFmeaModal() {
+      const modal = document.getElementById('fmea-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function saveFmeaItem(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('fmea-edit-id').value;
+      const stageId = document.getElementById('fmea-stage-input').value;
+      const s = Math.min(10, Math.max(1, Number(document.getElementById('fmea-s-input').value) || 1));
+      const o = Math.min(10, Math.max(1, Number(document.getElementById('fmea-o-input').value) || 1));
+      const d = Math.min(10, Math.max(1, Number(document.getElementById('fmea-d-input').value) || 1));
+
+      const payload = {
+        mode: document.getElementById('fmea-mode-input').value.trim(),
+        effect: document.getElementById('fmea-effect-input').value.trim(),
+        cause: document.getElementById('fmea-cause-input').value.trim(),
+        action: document.getElementById('fmea-action-input').value.trim()
+      };
+
+      if (idVal) {
+        const idx = state.fmea.findIndex(x => String(x.id) === String(idVal));
+        if (idx > -1) {
+          state.fmea[idx].stageId = stageId;
+          state.fmea[idx].s = s;
+          state.fmea[idx].o = o;
+          state.fmea[idx].d = d;
+          if (lang === 'ar') state.fmea[idx].ar = { ...state.fmea[idx].ar, ...payload };
+          else state.fmea[idx].tr = { ...state.fmea[idx].tr, ...payload };
+        }
+      } else {
+        state.fmea.unshift({
+          id: Date.now(),
+          stageId,
+          s, o, d,
+          tr: { ...payload },
+          ar: { ...payload }
+        });
+      }
+
+      closeFmeaModal();
+      saveState();
+    }
+
+    function deleteFmeaItem(id) {
+      state.fmea = state.fmea.filter(x => x.id !== id);
+      saveState();
+    }
+
+    function open8dModal(id = null) {
+      const isAr = lang === 'ar';
+      document.getElementById('d8-modal-title').textContent = id
+        ? (isAr ? 'تعديل سجل 8D' : '8D Kaydını Düzenle')
+        : (isAr ? 'فتح سجل 8D جديد' : 'Yeni 8D Kaydı Aç');
+
+      if (id) {
+        const item = state.d8.find(x => x.id === id);
+        if (!item) return;
+        const c = isAr ? item.ar : item.tr;
+        document.getElementById('d8-edit-id').value = item.id;
+        document.getElementById('d8-batch-input').value = item.batch || '';
+        document.getElementById('d8-status-input').value = item.status || 'OPEN';
+        document.getElementById('d8-problem-input').value = c.problem || '';
+        document.getElementById('d8-containment-input').value = c.containment || '';
+        document.getElementById('d8-root-input').value = c.root || '';
+        document.getElementById('d8-action-input').value = c.action || '';
+      } else {
+        document.getElementById('d8-edit-id').value = '';
+        document.getElementById('d8-modal-form').reset();
+        document.getElementById('d8-status-input').value = 'OPEN';
+      }
+
+      const modal = document.getElementById('d8-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function open8dFromFmea(fmeaId) {
+      const item = state.fmea.find(x => x.id === fmeaId);
+      switchTab('8d');
+      open8dModal();
+      if (item) {
+        const c = lang === 'ar' ? item.ar : item.tr;
+        document.getElementById('d8-problem-input').value = c.mode || '';
+        document.getElementById('d8-root-input').value = c.cause || '';
+        document.getElementById('d8-action-input').value = c.action || '';
+      }
+    }
+
+    function close8dModal() {
+      const modal = document.getElementById('d8-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function save8dItem(e) {
+      e.preventDefault();
+      const idVal = document.getElementById('d8-edit-id').value;
+      const batch = document.getElementById('d8-batch-input').value.trim();
+      const status = document.getElementById('d8-status-input').value;
+      const payload = {
+        problem: document.getElementById('d8-problem-input').value.trim(),
+        containment: document.getElementById('d8-containment-input').value.trim(),
+        root: document.getElementById('d8-root-input').value.trim(),
+        action: document.getElementById('d8-action-input').value.trim()
+      };
+
+      if (idVal) {
+        const idx = state.d8.findIndex(x => String(x.id) === String(idVal));
+        if (idx > -1) {
+          state.d8[idx].batch = batch;
+          state.d8[idx].status = status;
+          if (lang === 'ar') state.d8[idx].ar = { ...state.d8[idx].ar, ...payload };
+          else state.d8[idx].tr = { ...state.d8[idx].tr, ...payload };
+        }
+      } else {
+        state.d8.unshift({
+          id: Date.now(),
+          batch,
+          status,
+          tr: { ...payload },
+          ar: { ...payload }
+        });
+      }
+
+      close8dModal();
+      saveState();
+    }
+
+    function cycle8dStatus(id) {
+      const order = ['OPEN', 'VERIFY', 'CLOSED'];
+      state.d8 = state.d8.map(item => {
+        if (item.id !== id) return item;
+        const next = order[(order.indexOf(item.status) + 1) % order.length];
+        return { ...item, status: next };
+      });
+      saveState();
+    }
+
+    function delete8dItem(id) {
+      state.d8 = state.d8.filter(x => x.id !== id);
+      saveState();
+    }
+
+    function exportExcel() {
+      const rows = [
+        ['Type', 'Stage/Batch', 'Status/RPN', 'Title/Mode', 'Detail 1', 'Detail 2', 'Detail 3', 'S', 'O', 'D']
+      ];
+      state.fmea.forEach(item => {
+        const c = lang === 'ar' ? item.ar : item.tr;
+        rows.push([
+          'FMEA',
+          getStageName(item.stageId),
+          item.s * item.o * item.d,
+          c.mode,
+          c.effect,
+          c.cause,
+          c.action,
+          item.s, item.o, item.d
+        ]);
+      });
+      state.d8.forEach(item => {
+        const c = lang === 'ar' ? item.ar : item.tr;
+        rows.push([
+          '8D',
+          item.batch,
+          item.status,
+          c.problem,
+          c.containment,
+          c.root,
+          c.action,
+          '', '', ''
+        ]);
+      });
+
+      const csv = '\uFEFF' + rows.map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kahve_fabrikasi_fmea_8d.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportBackup() {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'kahve_fabrikasi_fmea_8d_yedek.json';
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importBackup(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const parsed = JSON.parse(reader.result);
+          if (parsed && Array.isArray(parsed.fmea) && Array.isArray(parsed.d8) && Array.isArray(parsed.stages)) {
+            state = parsed;
+            saveState();
+          }
+        } catch (_) {}
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function renderAll() {
+      renderLabels();
+      updateKPIs();
+      renderFMEA();
+      render8D();
+      renderStages();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
